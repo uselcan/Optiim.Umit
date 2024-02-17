@@ -1,0 +1,238 @@
+﻿<body>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#yeniKayitModal" data-personel-id='null'>
+                    Yeni Kayıt Ekle
+                </button>
+
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title">Personel Listesi</h3>
+                    </div>
+                    <div class="card-body">
+                        <table id="personelTable" class="table table-striped table-bordered" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Adı</th>
+                                    <th>Soyadı</th>
+                                    <th>Doğum Tarihi</th>
+                                    <th>Cinsiyet</th>
+                                    <th>Detay</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yeni Kayıt Ekle Modal -->
+    <div class="modal fade" id="yeniKayitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Yeni Kayıt Ekle</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="yeniKayitForm">
+                        <div class="form-group">
+                            <label for="adi">Adı:</label>
+                            <input type="text" class="form-control" id="adi" name="adi">
+                        </div>
+                        <div class="form-group">
+                            <label for="soyadi">Soyadı:</label>
+                            <input type="text" class="form-control" id="soyadi" name="soyadi">
+                        </div>
+                        <div class="form-group">
+                            <label for="dogumTarihi">Doğum Tarihi:</label>
+                            <input type="date" class="form-control" id="dogumTarihi" name="dogumTarihi">
+                        </div>
+                        <div class="form-group">
+                            <label for="cinsiyet">Cinsiyet:</label>
+                            <select class="form-control" id="cinsiyet" name="cinsiyet">
+                                <option value="Erkek">Erkek</option>
+                                <option value="Kadın">Kadın</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="departman">Departman:</label>
+                            <input type="text" class="form-control" id="departman" name="departman">
+                        </div>
+                        <div class="form-group">
+                            <label for="ucret">Ücret:</label>
+                            <input type="number" class="form-control" id="ucret" name="ucret" step="0.01" min="0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-primary" onclick="kaydet()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+    <!-- DataTables JS -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // DataTable oluşturulması ve buton tıklama olayının atanması
+            $('#personelTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "http://localhost:5004/Personel/",
+                    "type": "GET",
+                    "dataSrc": "personel"
+                },
+                "columns": [
+                    { "data": "id" },
+                    { "data": "adi" },
+                    { "data": "soyadi" },
+                    {
+                        "data": "dogumTarihi",
+                        "render": function (data, type, row) {
+                            var date = new Date(data);
+                            var day = date.getDate().toString().padStart(2, '0');
+                            var month = (date.getMonth() + 1).toString().padStart(2, '0');
+                            var year = date.getFullYear();
+                            return day + '.' + month + '.' + year;
+                        }
+                    },
+                    { "data": "cinsiyet" },
+                    {
+                        "data": "id",
+                        "render": function (data, type, row) {
+                            return "<button type='button' class='btn btn-primary btn-sm detay-btn' data-personel-id='" + data + "'>Detay Gör</button>";
+                        }
+                    }
+                ],
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "info": false
+            });
+
+            $('#yeniKayitModal').on('shown.bs.modal', function () {
+             
+            });
+        });
+
+        // Detay Gör butonuna tıklanınca yapılacak işlem
+        function detayGor(button) {
+            var data = $('#personelTable').DataTable().row($(button).parents('tr')).data();
+           
+        }
+
+
+        function kaydet() {
+            var adi = $('#adi').val();
+            var soyadi = $('#soyadi').val();
+            var dogumTarihi = $('#dogumTarihi').val();
+            var cinsiyet = $('#cinsiyet').val();
+            var departman = $('#departman').val();
+            var ucret = $('#ucret').val();
+
+            var data = {
+                adi: adi,
+                soyadi: soyadi,
+                dogumTarihi: dogumTarihi,
+                cinsiyet: cinsiyet,
+                departman: departman,
+                ucret: ucret,
+                departmanId: 42
+            };
+            console.log("data", data)
+            $.ajax({
+                url: 'http://localhost:5004/Personel/Kaydet',
+                type: 'POST', 
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('Kayıt başarıyla yapıldı.');
+                    reloadDataTable();
+                    $('#yeniKayitModal').modal('hide');
+                },
+                error: function (xhr, status, error) {
+                    var responseText = JSON.parse(xhr.responseText);
+                    var errorMessage = responseText.hataMesaj || 'Bir hata oluştu.';
+                    alert(errorMessage);
+                }
+            });
+        }
+
+
+
+
+        function reloadDataTable() {
+            $('#personelTable').DataTable().ajax.reload();
+        }
+
+        $('#yeniKayitModal').on('hidden.bs.modal', function (e) {
+            $(this).find('input').val(''); // Tüm input alanlarının içeriğini temizle
+        });
+
+        $(document).on('click', '.detay-btn', function () {
+            var personelId = $(this).data('personel-id');
+
+            // AJAX isteği yaparak personel detaylarını al
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost:5004/Personel/' + personelId,
+                success: function (response) {
+                    // Modal içindeki alanları doldurma işlemi
+                    $('#adi').val(response.adi);
+                    $('#soyadi').val(response.soyadi);
+                    $('#dogumTarihi').val(response.dogumTarihi.substring(0, 10));
+                    $('#cinsiyet').val(response.cinsiyet);
+                    // Maas bilgisini modal içinde göster
+                    var maasBilgisi = "";
+                    if (response.detaylar.length > 0) {
+                        maasBilgisi = response.detaylar[0].ucret.toFixed(2);
+                        departman = response.detaylar[0].departman
+                    } else {
+                        maasBilgisi = "Maas bilgisi bulunamadı";
+                    }
+                    $('#departman').val(departman)
+                    $('#ucret').val(maasBilgisi);
+
+                    if (personelId == null) {
+                        $('#yeniKayitModal').find('.modal-title').text('Yeni kayıt Ekle');
+                        $('#kaydetButton').text('Güncelle'); // Kaydet butonunu "Güncelle" olarak değiştir
+                    } else {
+                        $('#yeniKayitModal').find('.modal-title').text('Personel Detayları');
+                        $('#kaydetButton').text('Kaydet'); // Kaydet butonunu "Kaydet" olarak değiştir
+                    }
+                   
+
+                    // Modalı gösterme işlemi
+                    $('#yeniKayitModal').modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Personel detayları alınırken bir hata oluştu:', error);
+                }
+            });
+        });
+
+
+
+
+    </script>
+</body>
