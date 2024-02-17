@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Umit.Optiim.Api.props" />
+</Project>
